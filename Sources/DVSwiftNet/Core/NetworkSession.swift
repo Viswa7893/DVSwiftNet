@@ -51,6 +51,22 @@ public final class NetworkSession {
                 }
                 if (200..<300).contains(httpResponse.statusCode) {
                     let decoded: T? = try? JSONDecoder().decode(T.self, from: data)
+                    if decoded == nil {
+                        // Try to pretty-print the JSON data
+                        if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+                           let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted),
+                           let prettyString = String(data: prettyData, encoding: .utf8) {
+                            let endpoint = urlRequest.url?.path ?? ""
+                            print("[DVSwiftNet] Response not decodable, pretty JSON for [\(endpoint)]:\n\(prettyString)")
+                            logger?.log("[DVSwiftNet] Response not decodable, pretty JSON for [\(endpoint)]:\n\(prettyString)")
+                        } else if let rawString = String(data: data, encoding: .utf8) {
+                            let endpoint = urlRequest.url?.path ?? ""
+                            print("[DVSwiftNet] Response not decodable, raw data for [\(endpoint)]:\n\(rawString)")
+                            logger?.log("[DVSwiftNet] Response not decodable, raw data for [\(endpoint)]:\n\(rawString)")
+                        }
+                        return NetworkResponse(value: nil, data: data, response: response, error: .decodingFailed(NetworkError.decodingFailed(NSError(domain: "Decoding", code: 0))))
+                    }
+                    
                     // Pretty-print JSON on success
                     if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
                        let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted),
@@ -66,21 +82,6 @@ public final class NetworkSession {
                         let footer = String(repeating: "-", count: 40)
                         print("\n\(header)\n\(rawString)\n\(footer)\n")
                         logger?.log("[DVSwiftNet] SUCCESSFUL RESPONSE (Raw Data):\n\(rawString)")
-                    }
-                    if decoded == nil {
-                        // Try to pretty-print the JSON data
-                        if let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-                           let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted),
-                           let prettyString = String(data: prettyData, encoding: .utf8) {
-                            let endpoint = urlRequest.url?.path ?? ""
-                            print("[DVSwiftNet] Response not decodable, pretty JSON for [\(endpoint)]:\n\(prettyString)")
-                            logger?.log("[DVSwiftNet] Response not decodable, pretty JSON for [\(endpoint)]:\n\(prettyString)")
-                        } else if let rawString = String(data: data, encoding: .utf8) {
-                            let endpoint = urlRequest.url?.path ?? ""
-                            print("[DVSwiftNet] Response not decodable, raw data for [\(endpoint)]:\n\(rawString)")
-                            logger?.log("[DVSwiftNet] Response not decodable, raw data for [\(endpoint)]:\n\(rawString)")
-                        }
-                        return NetworkResponse(value: nil, data: data, response: response, error: .decodingFailed(NetworkError.decodingFailed(NSError(domain: "Decoding", code: 0))))
                     }
                     return NetworkResponse(value: decoded, data: data, response: response, error: nil)
                 } else {
