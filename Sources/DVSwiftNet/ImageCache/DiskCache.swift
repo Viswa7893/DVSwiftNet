@@ -1,5 +1,6 @@
 //  DiskCache.swift
 import Foundation
+import UIKit
 #if canImport(AppKit)
 import AppKit
 #endif
