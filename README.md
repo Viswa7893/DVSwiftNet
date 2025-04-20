@@ -24,7 +24,7 @@ A modern, extensible, and lightweight Swift networking framework for iOS, macOS,
 Add the following to your `Package.swift` dependencies:
 
 ```swift
-.package(url: "https://github.com/yourusername/DVSwiftNet.git", from: "1.0.0")
+.package(url: "https://github.com/Viswa7893/DVSwiftNet.git", from: "1.0.0")
 ```
 
 Or in Xcode: **File > Add Packages...** and enter your repository URL.
